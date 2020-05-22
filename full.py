@@ -19,8 +19,8 @@ EPSILON = 0.01
 
 class Mode(Enum):
     UNKNOWN = 0
-    AVG = 1
-    SUM = 2
+    AVG = 'AVG'
+    SUM = 'SUM'
 
 
 class Dataset(Enum):
@@ -79,9 +79,14 @@ realData = pd.read_sql(f"SELECT * FROM {dataset.value}", conn)
 regAvg = re.compile('AVG(.*)', re.IGNORECASE)
 regSum = re.compile('SUM(.*)', re.IGNORECASE)
 
-listAvg = list(filter(regAvg.match, queryAnalysis))
-listSum = list(filter(regSum.match, queryAnalysis))
-matches = listAvg + listSum
+matches = []
+
+for allowedFunction in Mode:
+    regex = re.compile(f"{allowedFunction.value}(.*)", re.IGNORECASE)
+    match = list(filter(regex.match, queryAnalysis))
+    if(len(match) == 1):
+        mode = allowedFunction
+    matches = matches + match
 
 where = re.search('WHERE(.*)', query, re.IGNORECASE)
 sampleFilter = sample.copy()
