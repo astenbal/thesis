@@ -6,6 +6,7 @@ import ctgan
 import pandas as pd
 import re
 from pandas.api.types import is_numeric_dtype
+import importlib
 
 import importlib
 
@@ -37,17 +38,14 @@ mode = Mode.UNKNOWN
 dataset = Dataset.UNKNOWN
 
 
-if('diabetes' in queryAnalysis):
-    import models.diabetes.run as model
-    dataset = Dataset.DIAB
-elif('kidney' in queryAnalysis):
-    import models.kidney.run as model
-    dataset = Dataset.KIDNEY
-elif('breast' in queryAnalysis):
-    import models.breast.run as model
-    dataset = Dataset.BREAST
-else:
+for allowedDataset in Dataset:
+    if(allowedDataset.value in queryAnalysis):
+        dataset = allowedDataset
+        break
+if(dataset == Dataset.UNKNOWN):
     raise Exception('Dataset unknown')
+
+model = importlib.import_module(f"models.{dataset.value}.run")
 
 sample = model.GetSyntheticData(100000)
 realData = pd.read_sql(f"SELECT * FROM {dataset.value}", conn)
