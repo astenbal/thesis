@@ -102,39 +102,32 @@ except:
 
 if(len(matches) == 1):
     column = re.search('(\(.*\))', matches[0], re.IGNORECASE).group(1)[1:-1]
-    sampleColumnDataFilter = pd.to_numeric(
-        sampleFilter[column], errors='coerce')
-    realColumnDataFilter = pd.to_numeric(
-        realDataFilter[column], errors='coerce')
-    sampleColumnData = pd.to_numeric(sample[column], errors='coerce')
-    realColumnData = pd.to_numeric(realData[column], errors='coerce')
-    allData = [realColumnDataFilter, sampleColumnDataFilter, realColumnData, sampleColumnData]
+    allData = [realDataFilter, sampleFilter, realData, sample]
+    allData = list(map(lambda d: pd.to_numeric(d[column], errors='coerce'), allData))
     results = ResultSet()
-    if(len(listAvg) == 1):
-        mode = Mode.AVG
-        list(map(lambda d: results.FillNext(d.mean()), allData))
-    elif(len(listSum) == 1):
-        mode = Mode.SUM
-        list(map(lambda d: results.FillNext(d.sum()), allData))
+    if(mode == Mode.AVG):
+        def func(d): return d.mean()
+    elif(mode == Mode.SUM):
+        def func(d): return d.sum()
     else:
         raise Exception('Unsupported query')
 else:
     raise Exception('Unsupported query')
+list(map(lambda d: results.FillNext(func(d)), allData))
 
 conn.row_factory = lambda cursor, row: row[0]
 cur = conn.cursor()
 
-maxSample = sampleColumnData.max()
-maxData = realColumnData.max()
+maxSample = allData[3].max()
+maxData = allData[2].max()
 if(mode == Mode.AVG):
-    maxSample = maxSample/(len(sampleColumnData) - 1)
-    maxData = maxData/(len(realColumnData) - 1)
+    maxSample = maxSample/(len(allData[3]) - 1)
+    maxData = maxData/(len(allData[2]) - 1)
 maxValues = [maxSample, maxData]
 print(f"Data max change: {maxData}")
 print(f"Sample max change: {maxSample}")
 print(f"Max change: {max(maxValues)}")
-#data = cur.execute(query).fetchone()
-# print(data)
+
 
 print(f"Sample result with filters: {results.sampleAnswer}")
 print(f"True result with filters: {results.trueAnswer}")
