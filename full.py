@@ -13,6 +13,7 @@ from enum import Enum
 
 conn = sqlite3.connect("database")
 
+EPSILON = 10
 
 class Mode(Enum):
     UNKNOWN = 0
@@ -92,10 +93,12 @@ else:
 conn.row_factory = lambda cursor, row: row[0]
 cur = conn.cursor()
 
-maxSample = sampleColumnDataFilter.max()
-maxData = realColumnDataFilter.max()
+maxSample = sampleColumnData.max()
+maxData = realColumnData.max()
+maxValues = [maxSample, maxData]
 print(f"Data max value: {maxData}")
 print(f"Sample max value: {maxSample}")
+print(f"Max value: {max(maxValues)}")
 #data = cur.execute(query).fetchone()
 #print(data)
 
@@ -103,3 +106,12 @@ print(f"Sample result with filters: {resultSampleDataFilter}")
 print(f"True result with filters: {resultRealDataFilter}")
 print(f"Sample result without filters: {resultSampleData}")
 print(f"True result without filters: {resultRealData}")
+
+dp = dpl.mechanisms.Laplace()
+dp.set_epsilon(EPSILON)
+dp.set_sensitivity(max(maxValues))
+
+result = dp.randomise(resultRealDataFilter)
+
+print(f'Private result: {result}')
+print(f'Private result error: {abs(result - resultRealDataFilter)}')
