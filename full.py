@@ -56,12 +56,15 @@ listSum = list(filter(regSum.match, queryAnalysis))
 matches = listAvg + listSum
 
 where = re.search('WHERE(.*)', query, re.IGNORECASE)
-whereVals = re.findall(' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
 sampleFilter = sample.copy()
 realDataFilter = realData.copy()
-for((column, value)) in whereVals:
-    sampleFilter = sampleFilter[sampleFilter[column] == value]
-    realDataFilter = realDataFilter[realDataFilter[column] == value]
+try:
+    whereVals = re.findall(' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
+    for((column, value)) in whereVals:
+        sampleFilter = sampleFilter[sampleFilter[column] == value]
+        realDataFilter = realDataFilter[realDataFilter[column] == value]
+except:
+    print('No where clause found')
 
 if(len(matches) == 1):
     column = re.search('(\(.*\))', matches[0], re.IGNORECASE).group(1)[1:-1]
