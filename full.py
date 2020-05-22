@@ -55,11 +55,11 @@ listAvg = list(filter(regAvg.match, queryAnalysis))
 listSum = list(filter(regSum.match, queryAnalysis))
 matches = listAvg + listSum
 
-where = re.search('(WHERE .*)', query, re.IGNORECASE)
-whereVals = re.findall('( (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$))', where.group(1), re.IGNORECASE)
+where = re.search('WHERE(.*)', query, re.IGNORECASE)
+whereVals = re.findall(' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
 sampleFilter = sample.copy()
 realDataFilter = realData.copy()
-for((_, column, value)) in whereVals:
+for((column, value)) in whereVals:
     sampleFilter = sampleFilter[sampleFilter[column] == value]
     realDataFilter = realDataFilter[realDataFilter[column] == value]
 
