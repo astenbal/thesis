@@ -29,6 +29,32 @@ class Dataset(Enum):
     KIDNEY = 'kidney'
     BREAST = 'breast'
 
+class ResultSet():
+    trueAnswer = False
+    sampleAnswer = False
+    unfilteredAnswer = False
+    sampleUnfilteredAnswer = False
+
+    def __init__(self):
+        return
+
+    def FillNext(self, value):
+        if(not self.trueAnswer):
+            self.trueAnswer = value
+            return
+        if(not self.sampleAnswer):
+            self.sampleAnswer = value
+            return
+        if(not self.unfilteredAnswer):
+            self.unfilteredAnswer = value
+            return
+        if(not self.sampleUnfilteredAnswer):
+            self.sampleUnfilteredAnswer = value
+            return
+        print('All values have been submitted')
+        return
+
+
 
 query = input("Query:\n")
 
@@ -77,18 +103,14 @@ if(len(matches) == 1):
         realDataFilter[column], errors='coerce')
     sampleColumnData = pd.to_numeric(sample[column], errors='coerce')
     realColumnData = pd.to_numeric(realData[column], errors='coerce')
+    allData = [realColumnDataFilter, sampleColumnDataFilter, realColumnData, sampleColumnData]
+    results = ResultSet()
     if(len(listAvg) == 1):
         mode = Mode.AVG
-        resultSampleDataFilter = sampleColumnDataFilter.mean()
-        resultRealDataFilter = realColumnDataFilter.mean()
-        resultSampleData = sampleColumnData.mean()
-        resultRealData = realColumnData.mean()
+        list(map(lambda d: results.FillNext(d.mean()), allData))
     elif(len(listSum) == 1):
         mode = Mode.SUM
-        resultSampleDataFilter = sampleColumnDataFilter.sum()
-        resultRealDataFilter = realColumnDataFilter.sum()
-        resultSampleData = sampleColumnData.sum()
-        resultRealData = realColumnData.sum()
+        list(map(lambda d: results.FillNext(d.sum()), allData))
     else:
         raise Exception('Unsupported query')
 else:
@@ -109,10 +131,10 @@ print(f"Max change: {max(maxValues)}")
 #data = cur.execute(query).fetchone()
 # print(data)
 
-print(f"Sample result with filters: {resultSampleDataFilter}")
-print(f"True result with filters: {resultRealDataFilter}")
-print(f"Sample result without filters: {resultSampleData}")
-print(f"True result without filters: {resultRealData}")
+print(f"Sample result with filters: {results.sampleAnswer}")
+print(f"True result with filters: {results.trueAnswer}")
+print(f"Sample result without filters: {results.sampleUnfilteredAnswer}")
+print(f"True result without filters: {results.unfilteredAnswer}")
 
 utility = [(str(maxSample), str(maxData), max(maxSample-maxData, 0.001))]
 exp = dpl.mechanisms.Exponential()
@@ -125,7 +147,7 @@ dp = dpl.mechanisms.Laplace()
 dp.set_epsilon(EPSILON)
 dp.set_sensitivity(sensitivity)
 
-result = dp.randomise(resultRealDataFilter)
+result = dp.randomise(results.trueAnswer)
 
 print(f'Private result: {result}')
-print(f'Private result error: {abs(result - resultRealDataFilter)}')
+print(f'Private result error: {abs(result - results.trueAnswer)}')
