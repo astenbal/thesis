@@ -15,16 +15,19 @@ conn = sqlite3.connect("database")
 
 EPSILON = 10
 
+
 class Mode(Enum):
     UNKNOWN = 0
     AVG = 1
     SUM = 2
+
 
 class Dataset(Enum):
     UNKNOWN = 0
     DIAB = 'diabetes'
     KIDNEY = 'kidney'
     BREAST = 'breast'
+
 
 query = input("Query:\n")
 
@@ -60,7 +63,8 @@ where = re.search('WHERE(.*)', query, re.IGNORECASE)
 sampleFilter = sample.copy()
 realDataFilter = realData.copy()
 try:
-    whereVals = re.findall(' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
+    whereVals = re.findall(
+        ' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
     for((column, value)) in whereVals:
         sampleFilter = sampleFilter[sampleFilter[column] == value]
         realDataFilter = realDataFilter[realDataFilter[column] == value]
@@ -69,10 +73,12 @@ except:
 
 if(len(matches) == 1):
     column = re.search('(\(.*\))', matches[0], re.IGNORECASE).group(1)[1:-1]
-    sampleColumnDataFilter = pd.to_numeric(sampleFilter[column], errors = 'coerce')
-    realColumnDataFilter = pd.to_numeric(realDataFilter[column], errors = 'coerce')
-    sampleColumnData = pd.to_numeric(sample[column], errors = 'coerce')
-    realColumnData = pd.to_numeric(realData[column], errors = 'coerce')
+    sampleColumnDataFilter = pd.to_numeric(
+        sampleFilter[column], errors='coerce')
+    realColumnDataFilter = pd.to_numeric(
+        realDataFilter[column], errors='coerce')
+    sampleColumnData = pd.to_numeric(sample[column], errors='coerce')
+    realColumnData = pd.to_numeric(realData[column], errors='coerce')
     if(len(listAvg) == 1):
         mode = Mode.AVG
         resultSampleDataFilter = sampleColumnDataFilter.mean()
@@ -100,7 +106,7 @@ print(f"Data max value: {maxData}")
 print(f"Sample max value: {maxSample}")
 print(f"Max value: {max(maxValues)}")
 #data = cur.execute(query).fetchone()
-#print(data)
+# print(data)
 
 print(f"Sample result with filters: {resultSampleDataFilter}")
 print(f"True result with filters: {resultRealDataFilter}")
