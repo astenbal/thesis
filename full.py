@@ -13,7 +13,7 @@ from enum import Enum
 
 conn = sqlite3.connect("database")
 
-EPSILON = 10
+EPSILON = 0.01
 
 
 class Mode(Enum):
@@ -101,10 +101,13 @@ cur = conn.cursor()
 
 maxSample = sampleColumnData.max()
 maxData = realColumnData.max()
+if(mode == Mode.AVG):
+    maxSample = maxSample/(len(sampleColumnData) - 1)
+    maxData = maxData/(len(realColumnData) - 1)
 maxValues = [maxSample, maxData]
-print(f"Data max value: {maxData}")
-print(f"Sample max value: {maxSample}")
-print(f"Max value: {max(maxValues)}")
+print(f"Data max change: {maxData}")
+print(f"Sample max change: {maxSample}")
+print(f"Max change: {max(maxValues)}")
 #data = cur.execute(query).fetchone()
 # print(data)
 
