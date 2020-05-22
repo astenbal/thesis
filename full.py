@@ -76,9 +76,6 @@ model = importlib.import_module(f"models.{dataset.value}.run")
 sample = model.GetSyntheticData(100000)
 realData = pd.read_sql(f"SELECT * FROM {dataset.value}", conn)
 
-regAvg = re.compile('AVG(.*)', re.IGNORECASE)
-regSum = re.compile('SUM(.*)', re.IGNORECASE)
-
 matches = []
 
 for allowedFunction in Mode:
