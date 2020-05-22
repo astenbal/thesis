@@ -35,24 +35,17 @@ class ResultSet():
     unfilteredAnswer = False
     sampleUnfilteredAnswer = False
 
-    def __init__(self):
-        return
-
     def FillNext(self, value):
         if(not self.trueAnswer):
             self.trueAnswer = value
-            return
-        if(not self.sampleAnswer):
+        elif(not self.sampleAnswer):
             self.sampleAnswer = value
-            return
-        if(not self.unfilteredAnswer):
+        elif(not self.unfilteredAnswer):
             self.unfilteredAnswer = value
-            return
-        if(not self.sampleUnfilteredAnswer):
+        elif(not self.sampleUnfilteredAnswer):
             self.sampleUnfilteredAnswer = value
-            return
-        print('All values have been submitted')
-        return
+        else:
+            print('All values have been submitted')
 
 
 
