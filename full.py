@@ -113,9 +113,16 @@ print(f"True result with filters: {resultRealDataFilter}")
 print(f"Sample result without filters: {resultSampleData}")
 print(f"True result without filters: {resultRealData}")
 
+utility = [(str(maxSample), str(maxData), max(maxSample-maxData, 0.001))]
+exp = dpl.mechanisms.Exponential()
+exp.set_utility(utility)
+exp.set_epsilon(EPSILON)
+
+sensitivity = float(exp.randomise(str(max(maxValues))))
+print(f"Sensitivity: {sensitivity}")
 dp = dpl.mechanisms.Laplace()
 dp.set_epsilon(EPSILON)
-dp.set_sensitivity(max(maxValues))
+dp.set_sensitivity(sensitivity)
 
 result = dp.randomise(resultRealDataFilter)
 
