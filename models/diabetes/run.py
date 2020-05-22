@@ -6,7 +6,6 @@ import pathlib
 
 model = False
 
-print(model)
 def SetModel(name: str = 'ctgan-diabetes-full-0'):
     global model
     model = torch.load(str(pathlib.Path(__file__).parent.absolute()) + '\\' + name)
