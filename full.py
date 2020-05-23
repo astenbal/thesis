@@ -8,8 +8,6 @@ import re
 from pandas.api.types import is_numeric_dtype
 import importlib
 
-import importlib
-
 from enum import Enum
 
 # Connection to main database
@@ -126,9 +124,6 @@ else:
     raise Exception('Unsupported query')
 # Execute the correct function on each data source and put in results
 list(map(lambda d: results.FillNext(func(d)), allData))
-
-conn.row_factory = lambda cursor, row: row[0]
-cur = conn.cursor()
 
 # Find the maximum values in the unfiltered sample and real data (this is the sensitivity of a sum query)
 maxSample = allData[3].max()
