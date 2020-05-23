@@ -5,7 +5,6 @@ import torch
 import ctgan
 import pandas as pd
 import re
-from pandas.api.types import is_numeric_dtype
 import importlib
 
 from enum import Enum
