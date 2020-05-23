@@ -85,10 +85,12 @@ for allowedFunction in Mode:
 
 # Find the where condition
 where = re.search('WHERE(.*)', query, re.IGNORECASE)
-sampleFilter = sample.copy()
-realDataFilter = realData.copy()
 # Try/catch as there might be no where condition
 try:
+
+# Create variables for filtering
+sampleFilter = sample
+realDataFilter = realData
     # Find all key = value combinations in the where (e.g. age = 60)
     whereVals = re.findall(
         ' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
