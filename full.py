@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import importlib
 
-from helpers import *
+import helpers
 
 # Connection to main database
 conn = sqlite3.connect("database")
@@ -19,18 +19,18 @@ EPSILON = 0.01
 query = input("Query:\n")
 
 # Initialise mode and data variables
-mode = Mode.UNKNOWN
-dataset = Dataset.UNKNOWN
+mode = helpers.Mode.UNKNOWN
+dataset = helpers.Dataset.UNKNOWN
 
 
 # Loop over known datasets and check which one is selected
-for allowedDataset in Dataset:
+for allowedDataset in helpers.Dataset:
     if(allowedDataset.value in query):
         dataset = allowedDataset
         break
 
 # If no known dataset selected, raise an exception
-if(dataset == Dataset.UNKNOWN):
+if(dataset == helpers.Dataset.UNKNOWN):
     raise Exception('Dataset unknown')
 
 # Import the model for the relevant dataset and create synthetic data
@@ -42,13 +42,17 @@ realData = pd.read_sql(f"SELECT * FROM {dataset.value}", conn)
 
 # Find the function(s) used in the query by looping over all allowed functions
 matches = []
-for allowedFunction in Mode:
+for allowedFunction in helpers.Mode:
     regex = re.compile(f"{allowedFunction.value['name']}\((.*)\)", re.IGNORECASE)
     match = regex.match(query)
     if(match is not None):
         match = [match.group(1)]
         mode = allowedFunction
         matches = matches + match
+
+# Currently we only support queries with one function, here we check if there is only one
+if(len(matches) != 1):
+    raise Exception('Unsupported query')
 
 # Find the where condition
 where = re.search('WHERE(.*)', query, re.IGNORECASE)
@@ -68,19 +72,15 @@ if(where is not None):
 else:
     print('No where clause found')
 
-# Currently we only support queries with one function, here we check if there is only one
-if(len(matches) == 1):
-    # Set the column name we want to execute the query on
-    column = matches[0]
-    # Compile all different datasources in one list
-    allData = [realDataFilter, sampleFilter, realData, sample]
-    # Take the relevant column from all datasources and make it numeric, with non numeric values
-    # changing to NaN
-    allData = list(map(lambda d: pd.to_numeric(d[column], errors='coerce'), allData))
-    # Create a new ResultSet to store all results in
-    results = ResultSet()
-else:
-    raise Exception('Unsupported query')
+# Set the column name we want to execute the query on
+column = matches[0]
+# Compile all different datasources in one list
+allData = [realDataFilter, sampleFilter, realData, sample]
+# Take the relevant column from all datasources and make it numeric, with non numeric values
+# changing to NaN
+allData = list(map(lambda d: pd.to_numeric(d[column], errors='coerce'), allData))
+# Create a new ResultSet to store all results in
+results = helpers.ResultSet()
 # Execute the correct function on each data source and put in results
 list(map(lambda d: results.FillNext(mode.value['func'](d)), allData))
 
@@ -89,7 +89,7 @@ maxSample = allData[3].max()
 maxData = allData[2].max()
 # If the mode is average we divide these values by the sum of all columns - 1 to get the sensitivity
 # both get divided by the size of real data, as this is the relevant sensitivity
-if(mode == Mode.AVG):
+if(mode == helpers.Mode.AVG):
     maxSample = maxSample/(len(allData[2]) - 1)
     maxData = maxData/(len(allData[2]) - 1)
 # Compile into list for easy comparing
