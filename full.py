@@ -17,9 +17,9 @@ EPSILON = 0.01
 
 # Enum to select the type of query being done
 class Mode(Enum):
-    UNKNOWN = 0
-    AVG = 'AVG'
-    SUM = 'SUM'
+    UNKNOWN = {'name': 0, 'func' : 0}
+    AVG = {'name': 'AVG', 'func' : lambda d: d.mean()}
+    SUM = {'name': 'SUM', 'func' : lambda d: d.sum()}
 
 # Enum with all datasets and their names, used to select proper ctgan model and sql table
 class Dataset(Enum):
@@ -76,7 +76,7 @@ realData = pd.read_sql(f"SELECT * FROM {dataset.value}", conn)
 # Find the function(s) used in the query by looping over all allowed functions
 matches = []
 for allowedFunction in Mode:
-    regex = re.compile(f"{allowedFunction.value}\((.*)\)", re.IGNORECASE)
+    regex = re.compile(f"{allowedFunction.value['name']}\((.*)\)", re.IGNORECASE)
     match = regex.match(query)
     if(match is not None):
         match = [match.group(1)]
@@ -112,17 +112,10 @@ if(len(matches) == 1):
     allData = list(map(lambda d: pd.to_numeric(d[column], errors='coerce'), allData))
     # Create a new ResultSet to store all results in
     results = ResultSet()
-    # Depending on the type of query we want to execute a different function on each data source
-    if(mode == Mode.AVG):
-        def func(d): return d.mean()
-    elif(mode == Mode.SUM):
-        def func(d): return d.sum()
-    else:
-        raise Exception('Unsupported query')
 else:
     raise Exception('Unsupported query')
 # Execute the correct function on each data source and put in results
-list(map(lambda d: results.FillNext(func(d)), allData))
+list(map(lambda d: results.FillNext(mode.value['func'](d)), allData))
 
 # Find the maximum values in the unfiltered sample and real data (this is the sensitivity of a sum query)
 maxSample = allData[3].max()
@@ -134,6 +127,7 @@ if(mode == Mode.AVG):
     maxData = maxData/(len(allData[2]) - 1)
 # Compile into list for easy comparing
 maxValues = [maxSample, maxData]
+print(f"Query: {mode.value['name']}({column})")
 print(f"Data max change: {maxData}")
 print(f"Sample max change: {maxSample}")
 print(f"Max change: {max(maxValues)}")
