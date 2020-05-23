@@ -127,8 +127,9 @@ list(map(lambda d: results.FillNext(func(d)), allData))
 maxSample = allData[3].max()
 maxData = allData[2].max()
 # If the mode is average we divide these values by the sum of all columns - 1 to get the sensitivity
+# both get divided by the size of real data, as this is the relevant sensitivity
 if(mode == Mode.AVG):
-    maxSample = maxSample/(len(allData[3]) - 1)
+    maxSample = maxSample/(len(allData[2]) - 1)
     maxData = maxData/(len(allData[2]) - 1)
 # Compile into list for easy comparing
 maxValues = [maxSample, maxData]
