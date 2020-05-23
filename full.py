@@ -85,12 +85,12 @@ for allowedFunction in Mode:
 
 # Find the where condition
 where = re.search('WHERE(.*)', query, re.IGNORECASE)
-# Try/catch as there might be no where condition
-try:
 
 # Create variables for filtering
 sampleFilter = sample
 realDataFilter = realData
+# Check if there is a where condition
+if(where is not None):
     # Find all key = value combinations in the where (e.g. age = 60)
     whereVals = re.findall(
         ' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
@@ -98,7 +98,7 @@ realDataFilter = realData
     for((column, value)) in whereVals:
         sampleFilter = sampleFilter[sampleFilter[column] == value]
         realDataFilter = realDataFilter[realDataFilter[column] == value]
-except:
+else:
     print('No where clause found')
 
 # Currently we only support queries with one function, here we check if there is only one
