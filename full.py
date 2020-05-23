@@ -7,46 +7,13 @@ import pandas as pd
 import re
 import importlib
 
-from enum import Enum
+from helpers import *
 
 # Connection to main database
 conn = sqlite3.connect("database")
 
 # Epsilon value for differential privacy
 EPSILON = 0.01
-
-# Enum to select the type of query being done
-class Mode(Enum):
-    UNKNOWN = {'name': 0, 'func' : 0}
-    AVG = {'name': 'AVG', 'func' : lambda d: d.mean()}
-    SUM = {'name': 'SUM', 'func' : lambda d: d.sum()}
-
-# Enum with all datasets and their names, used to select proper ctgan model and sql table
-class Dataset(Enum):
-    UNKNOWN = '?'
-    DIAB = 'diabetes'
-    KIDNEY = 'kidney'
-    BREAST = 'breast'
-
-# Class that contains all result values from different datasets
-class ResultSet():
-    trueAnswer = False
-    sampleAnswer = False
-    unfilteredAnswer = False
-    sampleUnfilteredAnswer = False
-
-    # Fill member variables in order
-    def FillNext(self, value):
-        if(not self.trueAnswer):
-            self.trueAnswer = value
-        elif(not self.sampleAnswer):
-            self.sampleAnswer = value
-        elif(not self.unfilteredAnswer):
-            self.unfilteredAnswer = value
-        elif(not self.sampleUnfilteredAnswer):
-            self.sampleUnfilteredAnswer = value
-        else:
-            print('All values have been submitted')
 
 # Ask the user to submit a query
 query = input("Query:\n")
