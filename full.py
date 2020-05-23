@@ -52,8 +52,6 @@ class ResultSet():
 # Ask the user to submit a query
 query = input("Query:\n")
 
-queryAnalysis = query.split(' ')
-
 # Initialise mode and data variables
 mode = Mode.UNKNOWN
 dataset = Dataset.UNKNOWN
@@ -61,7 +59,7 @@ dataset = Dataset.UNKNOWN
 
 # Loop over known datasets and check which one is selected
 for allowedDataset in Dataset:
-    if(allowedDataset.value in queryAnalysis):
+    if(allowedDataset.value in query):
         dataset = allowedDataset
         break
 
@@ -78,13 +76,13 @@ realData = pd.read_sql(f"SELECT * FROM {dataset.value}", conn)
 
 # Find the function(s) used in the query by looping over all allowed functions
 matches = []
-
 for allowedFunction in Mode:
-    regex = re.compile(f"{allowedFunction.value}(.*)", re.IGNORECASE)
-    match = list(filter(regex.match, queryAnalysis))
-    if(len(match) == 1):
+    regex = re.compile(f"{allowedFunction.value}\((.*)\)", re.IGNORECASE)
+    match = regex.match(query)
+    if(match is not None):
+        match = [match.group(1)]
         mode = allowedFunction
-    matches = matches + match
+        matches = matches + match
 
 # Find the where condition
 where = re.search('WHERE(.*)', query, re.IGNORECASE)
@@ -104,8 +102,8 @@ except:
 
 # Currently we only support queries with one function, here we check if there is only one
 if(len(matches) == 1):
-    column = re.search('(\(.*\))', matches[0], re.IGNORECASE).group(1)[1:-1]
     # Set the column name we want to execute the query on
+    column = matches[0]
     # Compile all different datasources in one list
     allData = [realDataFilter, sampleFilter, realData, sample]
     # Take the relevant column from all datasources and make it numeric, with non numeric values
