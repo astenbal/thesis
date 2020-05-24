@@ -4,3 +4,5 @@ data/
 old/
 thesis.code-workspace
 .vscode/
+helpers/__pycache__/
+models/__pycache__/
