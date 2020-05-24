@@ -9,4 +9,4 @@ class ComparisonType(Enum):
     E = {'name': '=' , 'regex' : '=', 'func' : lambda data, value : data == value}
     GT = {'name': '>' , 'regex' : '>', 'func' : lambda data, value: data > value}
     LT = {'name': '<' , 'regex' : '<', 'func' : lambda data, value: data < value}
-    UNKNOWN = {'name': 'UNKNOWN' , 'regex' : '=', 'func' : lambda data, value : False}
+    UNKNOWN = {'name': 'UNKNOWN' , 'regex' : '(?:UNKNOWN)', 'func' : lambda data, value : False}
