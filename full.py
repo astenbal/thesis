@@ -62,6 +62,7 @@ sampleFilter = sample
 realDataFilter = realData
 # Check if there is a where condition
 if(where is not None):
+    # Get the regex for each of the allowed functions
     functionNames = ''
     for allowedFunction in helpers.ComparisonType:
         if(functionNames != ''):
@@ -72,6 +73,7 @@ if(where is not None):
         f" (\w*?) *({functionNames}) *(?:'|\")?(\w+?)(?:'|\")?(?: |$)", where.group(1), re.IGNORECASE)
     # Filter the datasets using the column and value found
     for((column, funcType, value)) in whereVals:
+        # Find which function type this comparison is
         func = helpers.ComparisonType.UNKNOWN
         for allowedFunction in helpers.ComparisonType:
             if(allowedFunction.value['name'] == funcType):
@@ -79,6 +81,7 @@ if(where is not None):
                 break
         if(func == helpers.ComparisonType.UNKNOWN):
             print(f"Unsupported comparison {funcType} on {column}")
+        # Run the correct filter
         sampleFilter = sampleFilter[func.value['func'](sampleFilter[column], value)]
         realDataFilter = realDataFilter[func.value['func'](realDataFilter[column], value)]
 else:
