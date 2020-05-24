@@ -69,7 +69,7 @@ if(where is not None):
         functionNames += allowedFunction.value['regex']
     # Find all key = value combinations in the where (e.g. age = 60)
     whereVals = re.findall(
-        f" (.*?) *({functionNames}) *(?:'|\")?(.+?)(?:'|\")?(?: |$)", where.group(1), re.IGNORECASE)
+        f" (\w*?) *({functionNames}) *(?:'|\")?(\w+?)(?:'|\")?(?: |$)", where.group(1), re.IGNORECASE)
     # Filter the datasets using the column and value found
     for((column, funcType, value)) in whereVals:
         func = helpers.ComparisonType.UNKNOWN
