@@ -79,7 +79,6 @@ if(where is not None):
                 break
         if(func == helpers.ComparisonType.UNKNOWN):
             print(f"Unsupported comparison {funcType} on {column}")
-        print(func)
         sampleFilter = sampleFilter[func.value['func'](sampleFilter[column], value)]
         realDataFilter = realDataFilter[func.value['func'](realDataFilter[column], value)]
 else:
