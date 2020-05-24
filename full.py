@@ -62,13 +62,26 @@ sampleFilter = sample
 realDataFilter = realData
 # Check if there is a where condition
 if(where is not None):
+    functionNames = ''
+    for allowedFunction in helpers.ComparisonType:
+        if(functionNames != ''):
+            functionNames += '|'
+        functionNames += allowedFunction.value['regex']
     # Find all key = value combinations in the where (e.g. age = 60)
     whereVals = re.findall(
-        ' (.*?)(?: )*=(?: )?(?:\'|")(.+?)(?:\'|")(?: |$)', where.group(1), re.IGNORECASE)
+        f" (.*?) *({functionNames}) *(?:'|\")?(.+?)(?:'|\")?(?: |$)", where.group(1), re.IGNORECASE)
     # Filter the datasets using the column and value found
-    for((column, value)) in whereVals:
-        sampleFilter = sampleFilter[sampleFilter[column] == value]
-        realDataFilter = realDataFilter[realDataFilter[column] == value]
+    for((column, funcType, value)) in whereVals:
+        func = helpers.ComparisonType.UNKNOWN
+        for allowedFunction in helpers.ComparisonType:
+            if(allowedFunction.value['name'] == funcType):
+                func = allowedFunction
+                break
+        if(func == helpers.ComparisonType.UNKNOWN):
+            print(f"Unsupported comparison {funcType} on {column}")
+        print(func)
+        sampleFilter = sampleFilter[func.value['func'](sampleFilter[column], value)]
+        realDataFilter = realDataFilter[func.value['func'](realDataFilter[column], value)]
 else:
     print('No where clause found')
 
