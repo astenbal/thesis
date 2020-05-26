@@ -4,6 +4,7 @@ import diffprivlib as dpl
 import torch
 import ctgan
 import pandas as pd
+import numpy as np
 import re
 import importlib
 
@@ -105,14 +106,17 @@ maxData = allData[2].max()
 # If the mode is average we divide these values by the sum of all columns - 1 to get the sensitivity
 # both get divided by the size of real data, as this is the relevant sensitivity
 if(mode == helpers.Mode.AVG):
-    maxSample = maxSample/(len(allData[2]) - 1)
-    maxData = maxData/(len(allData[2]) - 1)
+    trueSensitivity = maxData/(len(allData[2]) - 1)
+    sampleSensitivity = maxSample/(len(allData[2]) - 1)
+elif(mode == helpers.Mode.SUM):
+    trueSensitivity = maxData
+    sampleSensitivity = maxSample
 # Compile into list for easy comparing
-maxValues = [maxSample, maxData]
+maxValues = [trueSensitivity, sampleSensitivity]
 print(f"Query: {mode.value['name']}({column})")
-print(f"Data max change: {maxData}")
-print(f"Sample max change: {maxSample}")
-print(f"Max change: {max(maxValues)}")
+print(f"Data sensitivity: {trueSensitivity}")
+print(f"Sample sensitivity: {sampleSensitivity}")
+print(f"Max sensitivity: {max(maxValues)}")
 
 
 print(f"Sample result with filters: {results.sampleAnswer}")
@@ -122,13 +126,31 @@ print(f"True result without filters: {results.unfilteredAnswer}")
 
 # TODO: Exponential mechanism utility (this probably isn't correct)
 # Exponential mechanism to select a sensitivity in a differentially private way
-utility = [(str(maxSample), str(maxData), max(maxSample-maxData, 0.001))]
+""" utility = [(str(maxSample), str(maxData), max(maxSample-maxData, 0.001))]
 exp = dpl.mechanisms.Exponential()
 exp.set_utility(utility)
 exp.set_epsilon(EPSILON)
-sensitivity = float(exp.randomise(str(max(maxValues))))
-print(f"Sensitivity: {sensitivity}")
+sensitivity = float(exp.randomise(str(max(maxValues))))"""
 
+# Calculate the absolute difference between the two sensitivities
+difference = abs(trueSensitivity - sampleSensitivity)
+# Add the difference multiplied by a  value from the normal distribution centered around 3 
+# to have a 97.5% chance of the fake sensitivity being higher or equal than the real
+# Can be changed to 2 for 83.9% chance instead if more uncertainty is needed
+fakeSensitivity = sampleSensitivity + (np.random.normal() + 3) * difference
+# Add on some noise to make sure fake sensitivity is different from real
+# as previous calculation will keep it the same if both values are equal
+fakeSensitivity = fakeSensitivity + (np.random.uniform(0.015, 0.06)  * sampleSensitivity)
+print(f"Fake sensitivity: {fakeSensitivity}")
+print(f"Fake sensitivity error: {fakeSensitivity - trueSensitivity}")
+# Flip a coin to decide which value to return as sensitivity
+# If either of two flips is heads, return true sensitivity, else return false sensitivity
+if(np.random.binomial(1, 0.5) == 1 or np.random.binomial(1, 0.5) == 1):
+    sensitivity = trueSensitivity
+else:
+    sensitivity = fakeSensitivity
+
+print(f"Sensitivity: {sensitivity}") 
 # Execute differential privacy on the actual answer to get a differentially private answer
 dp = dpl.mechanisms.Laplace()
 dp.set_epsilon(EPSILON)
