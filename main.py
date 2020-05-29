@@ -49,7 +49,7 @@ for allowedFunction in helpers.Mode:
     if(match is not None):
         match = [match.group(1)]
         mode = allowedFunction
-        matches = matches + match
+        matches += match
 
 # Currently we only support queries with one function, here we check if there is only one
 if(len(matches) != 1):
@@ -138,18 +138,16 @@ difference = abs(trueSensitivity - sampleSensitivity)
 # to have a 97.5% chance of the fake sensitivity being higher or equal than the real
 # Can be changed to 2 for 83.9% chance instead if more uncertainty is needed
 fakeSensitivity = sampleSensitivity + (np.random.normal() + 3) * difference
-# Add on some noise to make sure fake sensitivity is different from real
-# as previous calculation will keep it the same if both values are equal
-fakeSensitivity = fakeSensitivity + (np.random.uniform(0.015, 0.06)  * sampleSensitivity)
 print(f"Fake sensitivity: {fakeSensitivity}")
 print(f"Fake sensitivity error: {fakeSensitivity - trueSensitivity}")
-# Flip a coin to decide which value to return as sensitivity
-# If either of two flips is heads, return true sensitivity, else return false sensitivity
-if(np.random.binomial(1, 0.5) == 1 or np.random.binomial(1, 0.5) == 1):
+# Based on coin flip mechanism as shown in privacy book
+# 75% chance to use the true sensitivity, 25% chance to use the fake one
+if(np.random.binomial(1, 0.75) == 1:
     sensitivity = trueSensitivity
 else:
     sensitivity = fakeSensitivity
-
+# Add on some noise to add extra randomness to sensitivity
+sensitivity += (np.random.uniform(0.015, 0.06)  * sampleSensitivity)
 print(f"Sensitivity: {sensitivity}") 
 # Execute differential privacy on the actual answer to get a differentially private answer
 dp = dpl.mechanisms.Laplace()
