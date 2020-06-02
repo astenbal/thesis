@@ -142,7 +142,7 @@ print(f"Fake sensitivity: {fakeSensitivity}")
 print(f"Fake sensitivity error: {fakeSensitivity - trueSensitivity}")
 # Based on coin flip mechanism as shown in privacy book
 # 75% chance to use the true sensitivity, 25% chance to use the fake one
-if(np.random.binomial(1, 0.75) == 1:
+if(np.random.binomial(1, 0.75) == 1):
     sensitivity = trueSensitivity
 else:
     sensitivity = fakeSensitivity
